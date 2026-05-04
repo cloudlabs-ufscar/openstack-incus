@@ -1,0 +1,4 @@
+cluster_name = "lab"
+target_node  = "inc"
+vip_address  = "x.x.x.x"
+router_id    = 0

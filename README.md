@@ -349,6 +349,14 @@ localhost                  : ok=116  changed=0    unreachable=0    failed=0    s
 
 # Done!
 
+## Delete VM
+```
+sudo incus delete lab-openstack --force
+```
+(change `local` and `disco-ceph`)
+```
+sudo incus storage volume delete local disco-ceph
+```
 ---
 ## Errors
 
