@@ -61,7 +61,7 @@ runcmd:
     kolla-ansible install-deps
     kolla-ansible bootstrap-servers -i /root/all-in-one
     kolla-ansible prechecks -i /root/all-in-one
-    kolla-ansible deploy -i /root/all-in-one --tags
+    kolla-ansible deploy -i /root/all-in-one
     kolla-ansible post-deploy -i /root/all-in-one
     pip install python-openstackclient
     echo "====================================================="
