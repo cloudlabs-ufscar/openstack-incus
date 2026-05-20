@@ -12,6 +12,7 @@ packages:
   - libdbus-1-dev
   - libdbus-glib-1-dev
   - cloud-guest-utils
+  - openssh-server
 
 users:
   - name: root
@@ -19,14 +20,12 @@ users:
       - "${trimspace(pub_key)}"
 
 write_files:
-  # Injeta a chave privada em Base64 para anular problemas de indentação do YAML
   - path: /root/.ssh/id_rsa
     permissions: '0600'
     owner: root:root
     encoding: b64
     content: ${base64encode(priv_key)}
   
-  # Variáveis globais do OpenStack
   - path: /etc/kolla/globals.yml
     permissions: '0644'
     content: |
@@ -41,7 +40,6 @@ write_files:
       nova_compute_virt_type: "qemu"
       libvirt_enable_sasl: false
   
-  # Força uso de QEMU em laboratórios aninhados
   - path: /etc/kolla/config/nova/nova-compute.conf
     permissions: '0644'
     content: |
@@ -49,7 +47,6 @@ write_files:
       virt_type = qemu
       cpu_mode = none
   
-  # Arquivo de inventário MultiNode gerado dinamicamente
   - path: /root/multinode
     permissions: '0644'
     content: |
@@ -73,7 +70,6 @@ write_files:
       [deployment]
       localhost ansible_connection=local
   
-  # Script final de instalação
   - path: /root/run_deploy.sh
     permissions: '0755'
     content: |
@@ -101,6 +97,8 @@ write_files:
       echo "====================================================="
 
 runcmd:
+  - systemctl disable --now ssh.socket || true
+  - systemctl enable --now ssh.service || true
   - bash -c 'growpart /dev/sda 2 || true; resize2fs /dev/sda2 || true; exit 0'
   - pvcreate /dev/sdb || true
   - vgcreate cinder-volumes /dev/sdb || true
@@ -112,3 +110,5 @@ runcmd:
   - cp -r /opt/venv/share/kolla-ansible/etc_examples/kolla/* /etc/kolla/
   - /opt/venv/bin/kolla-genpwd
   - sed -i "s/libvirt_version_new.stdout/libvirt_version_new.get('stdout', '0.0.0')/g" /opt/venv/share/kolla-ansible/ansible/roles/nova-cell/tasks/version-check.yml || true
+  - chmod 600 /root/.ssh/id_rsa
+  - chmod +x /root/run_deploy.sh
