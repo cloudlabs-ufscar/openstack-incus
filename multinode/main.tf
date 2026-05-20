@@ -8,6 +8,7 @@ terraform {
 provider "incus" {}
 provider "tls" {}
 
+# Gera uma chave SSH exclusiva para este laboratório
 resource "tls_private_key" "kolla_ssh" {
   algorithm = "ED25519"
 }
@@ -16,12 +17,10 @@ data "incus_network" "ext_net" {
   name = var.ext_network
 }
 
-# Volume Cinder anexado APENAS ao Controller
 resource "incus_storage_volume" "cinder_disk" {
   name         = "osd-${var.cluster_name}-controller"
   pool         = var.storage_pool
   content_type = "block"
-  target       = var.target_node
 }
 
 # --- PERFIL E INSTÂNCIA DO CONTROLLER ---
@@ -98,7 +97,7 @@ resource "incus_instance" "compute" {
   target   = var.target_node
 
   config = {
-    "limits.cpu"    = "8" # Computes precisam de CPU para subir as VMs de teste
+    "limits.cpu"    = "8" 
     "limits.memory" = "16GiB"
   }
   device {

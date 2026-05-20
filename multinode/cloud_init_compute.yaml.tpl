@@ -1,13 +1,13 @@
 #cloud-config
 package_update: true
-users:
-  - name: root
-    ssh_authorized_keys:
-      - "${pub_key}"
-
 packages:
   - cloud-guest-utils
   - python3
 
+users:
+  - name: root
+    ssh_authorized_keys:
+      - "${trimspace(pub_key)}"
+
 runcmd:
-  - bash -c 'growpart /dev/sda 2; resize2fs /dev/sda2; exit 0'
+  - bash -c 'growpart /dev/sda 2 || true; resize2fs /dev/sda2 || true; exit 0'

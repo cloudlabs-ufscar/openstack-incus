@@ -1,0 +1,7 @@
+cluster_name  = "lab-os-multi"
+target_node   = "inc"
+vip_address   = "x.x.x.x"
+router_id     = 0
+compute_count = 2
+storage_pool  = "remote"
+ext_network   = "br-ex"
