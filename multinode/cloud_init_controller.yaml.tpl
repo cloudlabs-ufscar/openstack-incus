@@ -31,7 +31,7 @@ write_files:
     content: |
       [mysqld]
       innodb_use_native_aio = 0
-      
+
   - path: /etc/kolla/globals.yml
     permissions: '0644'
     content: |
@@ -122,7 +122,7 @@ runcmd:
   - mkdir -p /etc/kolla/config/nova
   - cp /opt/venv/share/kolla-ansible/etc_examples/kolla/passwords.yml /etc/kolla/passwords.yml
   - /opt/venv/bin/kolla-genpwd
-  - sed -i "s/libvirt_version_new.stdout/libvirt_version_new.get('stdout', '0.0.0')/g" /opt/venv/share/kolla-ansible/ansible/roles/nova-cell/tasks/version-check.yml || true
+  - sed -n '/\[baremetal:children\]/,$p' /opt/venv/share/kolla-ansible/ansible/inventory/multinode >> /root/multinode
   - cat /opt/venv/share/kolla-ansible/ansible/inventory/multinode >> /root/multinode
   - chmod 600 /root/.ssh/id_rsa
   - chmod +x /root/run_deploy.sh
