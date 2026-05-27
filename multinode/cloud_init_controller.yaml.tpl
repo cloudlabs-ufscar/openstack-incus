@@ -26,6 +26,12 @@ write_files:
     encoding: b64
     content: ${base64encode(priv_key)}
   
+  - path: /etc/kolla/config/mariadb/galera.cnf
+    permissions: '0644'
+    content: |
+      [mysqld]
+      innodb_use_native_aio = 0
+      
   - path: /etc/kolla/globals.yml
     permissions: '0644'
     content: |
@@ -39,6 +45,10 @@ write_files:
       cinder_volume_group: "cinder-volumes"
       nova_compute_virt_type: "qemu"
       libvirt_enable_sasl: false
+      docker_use_test_images: "yes"
+      cinder_enabled_backends:
+        - name: "lvm"
+          type: "lvm"
   
   - path: /etc/kolla/config/nova/nova-compute.conf
     permissions: '0644'
@@ -51,6 +61,9 @@ write_files:
     permissions: '0644'
     content: |
       [control]
+      ${cluster_name}-controller
+      
+      [loadbalancer]
       ${cluster_name}-controller
       
       [network]
@@ -87,7 +100,7 @@ write_files:
       
       echo "Iniciando Instalacao Multinode do OpenStack..."
       kolla-ansible bootstrap-servers -i /root/multinode
-      kolla-ansible prechecks -i /root/multinode
+      kolla-ansible prechecks -i /root/multinode --use-test-images
       kolla-ansible deploy -i /root/multinode
       kolla-ansible post-deploy -i /root/multinode
       pip install python-openstackclient
@@ -107,8 +120,9 @@ runcmd:
   - /opt/venv/bin/pip install pkgconfig dbus-python docker
   - /opt/venv/bin/pip install git+https://opendev.org/openstack/kolla-ansible@master
   - mkdir -p /etc/kolla/config/nova
-  - cp -r /opt/venv/share/kolla-ansible/etc_examples/kolla/* /etc/kolla/
+  - cp /opt/venv/share/kolla-ansible/etc_examples/kolla/passwords.yml /etc/kolla/passwords.yml
   - /opt/venv/bin/kolla-genpwd
   - sed -i "s/libvirt_version_new.stdout/libvirt_version_new.get('stdout', '0.0.0')/g" /opt/venv/share/kolla-ansible/ansible/roles/nova-cell/tasks/version-check.yml || true
+  - cat /opt/venv/share/kolla-ansible/ansible/inventory/multinode >> /root/multinode
   - chmod 600 /root/.ssh/id_rsa
   - chmod +x /root/run_deploy.sh
